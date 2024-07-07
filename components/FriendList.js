@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, Button, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, FlatList, StyleSheet } from 'react-native';
+import { SearchBar } from 'react-native-elements';
 import FriendItem from './FriendItem';
 
 const friendsData = [
@@ -10,14 +11,37 @@ const friendsData = [
 ]
 
 const FriendList = ({ navigation }) => {
+  const [search, setSearch] = useState('');
+
+  const filteredFriends = useMemo(() => {
+    if (search) {
+      return friendsData.filter(friend => 
+        friend.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    return friendsData;
+  }, [search]);
+
+  const renderItem = ({ item }) => (
+    <FriendItem 
+      friend={item} 
+      onPress={() => navigation.navigate('FriendDetail', { friend: item })} 
+    />
+  );
+
   return (
     <View style={styles.container}>
+      <SearchBar
+        placeholder="Search Friends..."
+        onChangeText={setSearch}
+        value={search}
+        lightTheme
+        round
+      />
       <FlatList
-        data={friendsData}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <FriendItem friend={item} onPress={() => navigation.navigate('FriendDetail', { friend: item })} />
-        )}
+        data={filteredFriends}
+        keyExtractor={item => item.id}
+        renderItem={renderItem}
       />
     </View>
   );
